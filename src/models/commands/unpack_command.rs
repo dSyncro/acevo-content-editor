@@ -1,16 +1,14 @@
 use std::{
 	fs::File,
 	io::{Read, Seek, SeekFrom, Write},
-	ops::Deref,
+	ops::Deref, time::Instant,
 };
 
 use colored::Colorize;
 use humansize::{make_format, DECIMAL};
 
 use crate::{
-	args::{GlobalOpts, UnpackArgs},
-	models::{PackageFileTable, PackedPackageBuffer},
-	traits::PureRunnable,
+	args::{GlobalOpts, UnpackArgs}, functions::format_duration_ms, models::{PackageFileTable, PackedPackageBuffer}, traits::PureRunnable
 };
 
 #[derive(Debug)]
@@ -27,6 +25,8 @@ impl UnpackCommand {
 
 impl PureRunnable for UnpackCommand {
 	fn run(&self) {
+		let start = Instant::now();
+
 		let content_path = self.global.content_path.as_path();
 		let output_path = self.global.content_output.as_path();
 
@@ -83,12 +83,15 @@ impl PureRunnable for UnpackCommand {
 			written_bytes += entry.size;
 		});
 
+		let elapsed = start.elapsed();
+
 		println!(
-			"{}! Written {} of data unpacked using query {}. Skipped {} files.",
+			"{}! Written {} of data unpacked using query {}. Skipped {} files. Took {} to execute.",
 			"Extraction complete".green(),
 			size_formatter(written_bytes).cyan(),
 			self.args.glob.as_str().yellow(),
-			skipped_files.to_string().bright_purple()
+			skipped_files.to_string().bright_purple(),
+			format_duration_ms(elapsed).bright_blue()
 		);
 	}
 }

@@ -4,7 +4,9 @@ use colored::Colorize;
 use humansize::{format_size, DECIMAL};
 
 use crate::{
-	args::{GlobalOpts, ListArgs}, functions::format_duration_ms, models::PackageFileTable
+	args::{GlobalOpts, ListArgs},
+	functions::format_duration_ms,
+	models::PackageFileTable,
 };
 
 #[derive(Debug)]
@@ -25,14 +27,14 @@ impl ListCommand {
 		let file_table = PackageFileTable::read_unpacked_from(&self.global.content_path);
 
 		let matches = file_table.query(&self.args.glob);
-		matches.iter().for_each(|entry| {
+		for entry in matches.iter() {
 			println!(
 				"Found file {} at {} with size {}",
 				entry.path.magenta(),
 				format!("0x{:x}", entry.address).cyan(),
 				format_size(entry.size, DECIMAL).cyan()
 			)
-		});
+		}
 
 		let elapsed = start.elapsed();
 

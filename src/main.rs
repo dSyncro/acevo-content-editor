@@ -1,14 +1,11 @@
 use acevo_content_editor::{
 	args::{self},
-	functions::init_logging,
 	models::{ListCommand, UnpackCommand},
 };
 use clap::Parser;
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
-	init_logging();
-
 	let args = args::CliArgs::parse();
 	match args.command {
 		args::Command::Unpack(unpack_args) => {

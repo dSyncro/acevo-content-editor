@@ -61,23 +61,23 @@ impl UnpackCommand {
 		let mut skipped_files = 0usize;
 		while let Some(res) = tasks.join_next().await {
 			if let Err(task_error) = res {
-				log::error!("{task_error}");
+				eprintln!("{task_error}");
 				continue;
 			}
 
 			let res = res.unwrap();
 			if let Err(unpack_error) = res {
-				log::error!("{unpack_error}");
+				eprintln!("{unpack_error}");
 				continue;
 			}
 
 			let res = res.unwrap();
 			written_bytes += res.written_bytes as usize;
 			if res.has_been_skipped {
-				log::info!("Skipping {}. It already exists", res.path.magenta());
+				println!("Skipping {}. It already exists", res.path.magenta());
 				skipped_files += 1;
 			} else {
-				log::info!(
+				println!(
 					"Unpacked {} with size {}",
 					res.path.magenta(),
 					format_size(res.written_bytes, DECIMAL).cyan()
@@ -86,7 +86,7 @@ impl UnpackCommand {
 		}
 
 		let elapsed = start.elapsed();
-		log::info!(
+		println!(
 			"{}! Written {} of unpacked data using query {}. Skipped {} files. Took {} to execute.",
 			"Unpack complete".green(),
 			format_size(written_bytes, DECIMAL).cyan(),

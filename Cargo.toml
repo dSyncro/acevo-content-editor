@@ -1,6 +1,6 @@
 [package]
 name = "acevo_content_editor"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "A utility tool to quickly unpack Assetto Corsa Evo packed content packages (*.kspkg)."
 

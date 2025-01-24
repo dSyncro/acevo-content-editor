@@ -86,8 +86,8 @@ impl PureRunnable for UnpackCommand {
 		let elapsed = start.elapsed();
 
 		println!(
-			"{}! Written {} of data unpacked using query {}. Skipped {} files. Took {} to execute.",
-			"Extraction complete".green(),
+			"{}! Written {} of unpacked data using query {}. Skipped {} files. Took {} to execute.",
+			"Unpack complete".green(),
 			size_formatter(written_bytes).cyan(),
 			self.args.glob.as_str().yellow(),
 			skipped_files.to_string().bright_purple(),

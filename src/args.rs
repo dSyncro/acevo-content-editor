@@ -24,7 +24,7 @@ pub enum Command {
 #[derive(Debug, Args)]
 pub struct UnpackArgs {
 	/// Pattern of the elements to look for
-	#[clap(value_name = "GLOB", index = 1)]
+	#[clap(value_name = "GLOB", index = 1, default_value = "*")]
 	pub glob: Pattern,
 
 	/// Pattern of elements to force extract, even if they are already present

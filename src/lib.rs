@@ -7,3 +7,4 @@ include!("bindings/bindings.rs");
 pub mod args;
 pub mod models;
 pub mod traits;
+pub mod functions;

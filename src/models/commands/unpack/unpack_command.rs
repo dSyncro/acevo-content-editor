@@ -13,7 +13,7 @@ use crate::{
 	args::{GlobalOpts, UnpackArgs},
 	functions::format_duration_ms,
 	models::{PackageFileTable, PackedPackageBuffer},
-	traits::{PureRunnableAsync, SeekReadAsync},
+	traits::SeekReadAsync,
 };
 
 use super::{UnpackTaskData, UnpackTaskResponse};
@@ -24,59 +24,13 @@ pub struct UnpackCommand {
 	pub args: UnpackArgs,
 }
 
+/// Public API
 impl UnpackCommand {
 	pub fn new(global: GlobalOpts, args: UnpackArgs) -> Self {
 		Self { global, args }
 	}
 
-	async fn unpack_entry(data: UnpackTaskData) -> io::Result<UnpackTaskResponse> {
-		let seek_position = SeekFrom::Start(data.entry.address);
-		let mut buffer = vec![0u8; data.entry.size as usize];
-
-		// Read the file
-		let mut write_handle = data.content_package.lock().await;
-		write_handle.seek_read(seek_position, &mut buffer).await?;
-		drop(write_handle);
-
-		// Prepare output
-		let unpacked_buffer = PackedPackageBuffer::new(buffer).unpacked(data.key);
-		let destination = data.output_path.join(&data.entry.path);
-		let output_parent_path = destination.parent();
-		if let Some(parent) = output_parent_path {
-			tokio::fs::create_dir_all(parent).await?;
-		}
-
-		// Skip entry if we can
-		if destination.exists() {
-			match data.force {
-				Some(pattern) if pattern.matches_path(&destination) => {},
-				_ => {
-					let response = UnpackTaskResponse {
-						written_bytes: 0,
-						has_been_skipped: true,
-						path: data.entry.path,
-					};
-					return Ok(response);
-				},
-			}
-		}
-
-		// Write output
-		let mut output_file = File::create(&destination).await?;
-		output_file.write_all(unpacked_buffer.deref()).await?;
-
-		let response = UnpackTaskResponse {
-			written_bytes: data.entry.size,
-			has_been_skipped: false,
-			path: data.entry.path,
-		};
-
-		Ok(response)
-	}
-}
-
-impl PureRunnableAsync for UnpackCommand {
-	async fn run(&self) {
+	pub async fn run(&self) {
 		let start = Instant::now();
 
 		let content_path = self.global.content_path.as_path();
@@ -140,5 +94,53 @@ impl PureRunnableAsync for UnpackCommand {
 			skipped_files.to_string().bright_purple(),
 			format_duration_ms(elapsed).bright_blue()
 		);
+	}
+}
+
+/// Private members
+impl UnpackCommand {
+	async fn unpack_entry(data: UnpackTaskData) -> io::Result<UnpackTaskResponse> {
+		let seek_position = SeekFrom::Start(data.entry.address);
+		let mut buffer = vec![0u8; data.entry.size as usize];
+
+		// Read the file
+		let mut write_handle = data.content_package.lock().await;
+		write_handle.seek_read(seek_position, &mut buffer).await?;
+		drop(write_handle);
+
+		// Prepare output
+		let unpacked_buffer = PackedPackageBuffer::new(buffer).unpacked(data.key);
+		let destination = data.output_path.join(&data.entry.path);
+		let output_parent_path = destination.parent();
+		if let Some(parent) = output_parent_path {
+			tokio::fs::create_dir_all(parent).await?;
+		}
+
+		// Skip entry if we can
+		if destination.exists() {
+			match data.force {
+				Some(pattern) if pattern.matches_path(&destination) => {},
+				_ => {
+					let response = UnpackTaskResponse {
+						written_bytes: 0,
+						has_been_skipped: true,
+						path: data.entry.path,
+					};
+					return Ok(response);
+				},
+			}
+		}
+
+		// Write output
+		let mut output_file = File::create(&destination).await?;
+		output_file.write_all(unpacked_buffer.deref()).await?;
+
+		let response = UnpackTaskResponse {
+			written_bytes: data.entry.size,
+			has_been_skipped: false,
+			path: data.entry.path,
+		};
+
+		Ok(response)
 	}
 }

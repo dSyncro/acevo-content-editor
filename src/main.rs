@@ -1,22 +1,12 @@
-use std::{env, io};
-
 use acevo_content_editor::{
 	args::{self},
+	functions::init_logging,
 	models::{ListCommand, UnpackCommand},
-	traits::{PureRunnable, PureRunnableAsync},
 };
 use clap::Parser;
 
-fn init_logging() {
-	if env::var_os("RUST_LOG").is_none() {
-		env::set_var("RUST_LOG", "info");
-	}
-
-	env_logger::builder().format_target(false).init();
-}
-
 #[tokio::main]
-async fn main() -> io::Result<()> {
+async fn main() -> Result<(), ()> {
 	init_logging();
 
 	let args = args::CliArgs::parse();

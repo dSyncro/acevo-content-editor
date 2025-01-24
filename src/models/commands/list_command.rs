@@ -4,7 +4,7 @@ use colored::Colorize;
 use humansize::{format_size, DECIMAL};
 
 use crate::{
-	args::{GlobalOpts, ListArgs}, functions::format_duration_ms, models::PackageFileTable, traits::PureRunnable
+	args::{GlobalOpts, ListArgs}, functions::format_duration_ms, models::PackageFileTable
 };
 
 #[derive(Debug)]
@@ -13,14 +13,13 @@ pub struct ListCommand {
 	pub args: ListArgs,
 }
 
+/// Public API
 impl ListCommand {
 	pub fn new(global: GlobalOpts, args: ListArgs) -> Self {
 		Self { global, args }
 	}
-}
 
-impl PureRunnable for ListCommand {
-	fn run(&self) {
+	pub fn run(&self) {
 		let start = Instant::now();
 
 		let file_table = PackageFileTable::read_unpacked_from(&self.global.content_path);

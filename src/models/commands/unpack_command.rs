@@ -1,14 +1,18 @@
 use std::{
 	fs::File,
 	io::{Read, Seek, SeekFrom, Write},
-	ops::Deref, time::Instant,
+	ops::Deref,
+	time::Instant,
 };
 
 use colored::Colorize;
 use humansize::{make_format, DECIMAL};
 
 use crate::{
-	args::{GlobalOpts, UnpackArgs}, functions::format_duration_ms, models::{PackageFileTable, PackedPackageBuffer}, traits::PureRunnable
+	args::{GlobalOpts, UnpackArgs},
+	functions::format_duration_ms,
+	models::{PackageFileTable, PackedPackageBuffer},
+	traits::PureRunnable,
 };
 
 #[derive(Debug)]

@@ -19,7 +19,6 @@ pub enum Command {
 	List(ListArgs),
 	/// Unpack content from package
 	Unpack(UnpackArgs),
-	UnpackAsync(UnpackArgs)
 }
 
 #[derive(Debug, Args)]

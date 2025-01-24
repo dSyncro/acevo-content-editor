@@ -2,8 +2,8 @@ use std::{env, io};
 
 use acevo_content_editor::{
 	args::{self},
-	models::{ListCommand, PureRunnableAsync, UnpackCommand, UnpackCommandAsync},
-	traits::PureRunnable,
+	models::{ListCommand, UnpackCommand},
+	traits::{PureRunnable, PureRunnableAsync},
 };
 use clap::Parser;
 
@@ -22,14 +22,11 @@ async fn main() -> io::Result<()> {
 	let args = args::CliArgs::parse();
 	match args.command {
 		args::Command::Unpack(unpack_args) => {
-			UnpackCommand::new(args.global_opts, unpack_args).run()
-		},
-		args::Command::List(list_args) => ListCommand::new(args.global_opts, list_args).run(),
-		args::Command::UnpackAsync(unpack_args) => {
-			UnpackCommandAsync::new(args.global_opts, unpack_args)
+			UnpackCommand::new(args.global_opts, unpack_args)
 				.run()
 				.await
 		},
+		args::Command::List(list_args) => ListCommand::new(args.global_opts, list_args).run(),
 	}
 
 	Ok(())

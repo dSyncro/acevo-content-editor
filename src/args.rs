@@ -42,7 +42,7 @@ pub struct ListArgs {
 #[derive(Debug, Args)]
 pub struct GlobalOpts {
 	/// Verbosity level (can be specified multiple times)
-	#[clap(long, short, global = true, action = ArgAction::Count)]
+	#[clap(long, short, global = true, default_value_t = 1, action = ArgAction::Count)]
 	pub verbose: u8,
 
 	/// The path of the content package

@@ -15,7 +15,11 @@ impl SeekRead for std::fs::File {
 }
 
 pub trait SeekReadAsync {
-	fn seek_read(&mut self, position: SeekFrom, buffer: &mut [u8]) -> impl std::future::Future<Output = tokio::io::Result<()>> + Send;
+	fn seek_read(
+		&mut self,
+		position: SeekFrom,
+		buffer: &mut [u8],
+	) -> impl std::future::Future<Output = tokio::io::Result<()>> + Send;
 }
 
 impl SeekReadAsync for tokio::fs::File {

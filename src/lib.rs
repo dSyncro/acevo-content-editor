@@ -5,6 +5,6 @@
 include!("bindings/bindings.rs");
 
 pub mod args;
+pub mod functions;
 pub mod models;
 pub mod traits;
-pub mod functions;

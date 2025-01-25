@@ -2,6 +2,7 @@ use std::{io::SeekFrom, ops::Deref, sync::Arc, time::Instant};
 
 use colored::Colorize;
 use humansize::{format_size, DECIMAL};
+use spdlog::{error, info, trace};
 use tokio::{
 	fs::File,
 	io::{self, AsyncWriteExt},
@@ -43,6 +44,7 @@ impl UnpackCommand {
 
 		let file_table = PackageFileTable::read_unpacked_from(content_path);
 		let files = file_table.query(&self.args.glob);
+		let matching_files = files.len();
 
 		let mut tasks = JoinSet::new();
 		for entry in files {
@@ -61,23 +63,23 @@ impl UnpackCommand {
 		let mut skipped_files = 0usize;
 		while let Some(res) = tasks.join_next().await {
 			if let Err(task_error) = res {
-				eprintln!("{task_error}");
+				error!("{task_error}");
 				continue;
 			}
 
 			let res = res.unwrap();
 			if let Err(unpack_error) = res {
-				eprintln!("{unpack_error}");
+				error!("{unpack_error}");
 				continue;
 			}
 
 			let res = res.unwrap();
 			written_bytes += res.written_bytes as usize;
 			if res.has_been_skipped {
-				println!("Skipping {}. It already exists", res.path.magenta());
+				trace!("Skipping {}. It already exists", res.path.magenta());
 				skipped_files += 1;
 			} else {
-				println!(
+				info!(
 					"Unpacked {} with size {}",
 					res.path.magenta(),
 					format_size(res.written_bytes, DECIMAL).cyan()
@@ -86,12 +88,13 @@ impl UnpackCommand {
 		}
 
 		let elapsed = start.elapsed();
-		println!(
-			"{}! Written {} of unpacked data using query {}. Skipped {} files. Took {} to execute.",
+		info!(
+			"{}! Written {} of unpacked data using query {}. Skipped {} files out of {} matching query. Took {} to execute.",
 			"Unpack complete".green(),
 			format_size(written_bytes, DECIMAL).cyan(),
 			self.args.glob.as_str().yellow(),
 			skipped_files.to_string().bright_purple(),
+			matching_files.to_string().bright_purple(),
 			format_duration_ms(elapsed).bright_blue()
 		);
 	}

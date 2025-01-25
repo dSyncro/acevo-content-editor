@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use colored::Colorize;
 use humansize::{format_size, DECIMAL};
+use spdlog::info;
 
 use crate::{
 	args::{GlobalOpts, ListArgs},
@@ -28,7 +29,7 @@ impl ListCommand {
 
 		let matches = file_table.query(&self.args.glob);
 		for entry in matches.iter() {
-			println!(
+			info!(
 				"Found file {} at {} with size {}",
 				entry.path.magenta(),
 				format!("0x{:x}", entry.address).cyan(),
@@ -38,7 +39,7 @@ impl ListCommand {
 
 		let elapsed = start.elapsed();
 
-		println!(
+		info!(
 			"{}! Found {} entries matching query {}. Took {} to execute.",
 			"Query complete".green(),
 			matches.len().to_string().cyan(),

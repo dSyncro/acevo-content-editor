@@ -1,16 +1,11 @@
-use std::{
-	path::PathBuf,
-	time::Instant,
-};
+use std::{path::PathBuf, time::Instant};
 
 use glob::Pattern;
 
 use crate::{
 	args::{GlobalOpts, ListArgs},
-	models::{FileEntry, PackageFileTable},
+	models::{Benchmarked, FileEntry, PackageFileTable},
 };
-
-use super::ListResponse;
 
 #[derive(Debug)]
 pub struct ListCommand {
@@ -24,13 +19,13 @@ impl ListCommand {
 		Self { global, args }
 	}
 
-	pub fn run(&self) -> ListResponse {
+	pub fn run(&self) -> Benchmarked<Vec<FileEntry>> {
 		let start = Instant::now();
 		let entries = list_query(&self.global.content_path, &self.args.glob);
 
-		ListResponse {
+		Benchmarked {
 			execution_time: start.elapsed(),
-			entries,
+			data: entries,
 		}
 	}
 }

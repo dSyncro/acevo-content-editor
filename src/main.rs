@@ -55,8 +55,11 @@ async fn main() -> Result<(), ()> {
 		},
 		args::Command::List(list_args) => {
 			let pattern = list_args.glob.to_string();
-			let response = ListCommand::new(args.global_opts, list_args).run();
-			for entry in response.entries.iter() {
+			let Benchmarked {
+				execution_time,
+				data: entries,
+			} = ListCommand::new(args.global_opts, list_args).run();
+			for entry in entries.iter() {
 				info!(
 					"Found file {} at {} with size {}",
 					entry.path.magenta(),
@@ -68,9 +71,9 @@ async fn main() -> Result<(), ()> {
 			info!(
 				"{}! Found {} entries matching query {}. Took {} to execute.",
 				"Query complete".green(),
-				response.entries.len().to_string().cyan(),
+				entries.len().to_string().cyan(),
 				pattern.yellow(),
-				format_duration_ms(response.execution_time).bright_blue()
+				format_duration_ms(execution_time).bright_blue()
 			);
 		},
 	}

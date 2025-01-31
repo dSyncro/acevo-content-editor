@@ -37,7 +37,6 @@ impl ListCommand {
 
 pub fn list_query(path: impl Into<PathBuf>, pattern: &Pattern) -> Vec<FileEntry> {
 	let path = path.into();
-
 	let file_table = PackageFileTable::read_unpacked_from(path);
 	file_table.query(pattern)
 }

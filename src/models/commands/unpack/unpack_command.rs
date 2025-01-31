@@ -1,8 +1,6 @@
 use std::{io::SeekFrom, ops::Deref, sync::Arc, time::Instant};
 
-use colored::Colorize;
-use humansize::{format_size, DECIMAL};
-use spdlog::{error, info, trace};
+use spdlog::error;
 use tokio::{
 	fs::File,
 	io::{self, AsyncWriteExt},
@@ -12,8 +10,7 @@ use tokio::{
 
 use crate::{
 	args::{GlobalOpts, UnpackArgs},
-	functions::format_duration_ms,
-	models::{PackageFileTable, PackedPackageBuffer},
+	models::{Benchmarked, PackageFileTable, PackedPackageBuffer},
 	traits::SeekReadAsync,
 };
 
@@ -31,7 +28,7 @@ impl UnpackCommand {
 		Self { global, args }
 	}
 
-	pub async fn run(&self) {
+	pub async fn run(&self) -> Benchmarked<Vec<UnpackTaskResponse>> {
 		let start = Instant::now();
 
 		let content_path = self.global.content_path.as_path();
@@ -44,7 +41,6 @@ impl UnpackCommand {
 
 		let file_table = PackageFileTable::read_unpacked_from(content_path);
 		let files = file_table.query(&self.args.glob);
-		let matching_files = files.len();
 
 		let mut tasks = JoinSet::new();
 		for entry in files {
@@ -59,44 +55,19 @@ impl UnpackCommand {
 			tasks.spawn(Self::unpack_entry(data));
 		}
 
-		let mut written_bytes = 0usize;
-		let mut skipped_files = 0usize;
-		while let Some(res) = tasks.join_next().await {
-			if let Err(task_error) = res {
-				error!("{task_error}");
-				continue;
-			}
-
-			let res = res.unwrap();
-			if let Err(unpack_error) = res {
+		let responses = tasks.join_all().await;
+		let responses = responses.into_iter().filter_map(|res| match res {
+			Err(unpack_error) => {
 				error!("{unpack_error}");
-				continue;
-			}
+				None
+			},
+			_ => Some(res.unwrap()),
+		});
 
-			let res = res.unwrap();
-			written_bytes += res.written_bytes as usize;
-			if res.has_been_skipped {
-				trace!("Skipping {}. It already exists", res.path.magenta());
-				skipped_files += 1;
-			} else {
-				info!(
-					"Unpacked {} with size {}",
-					res.path.magenta(),
-					format_size(res.written_bytes, DECIMAL).cyan()
-				);
-			}
+		Benchmarked {
+			execution_time: start.elapsed(),
+			data: responses.collect(),
 		}
-
-		let elapsed = start.elapsed();
-		info!(
-			"{}! Written {} of unpacked data using query {}. Skipped {} files out of {} matching query. Took {} to execute.",
-			"Unpack complete".green(),
-			format_size(written_bytes, DECIMAL).cyan(),
-			self.args.glob.as_str().yellow(),
-			skipped_files.to_string().bright_purple(),
-			matching_files.to_string().bright_purple(),
-			format_duration_ms(elapsed).bright_blue()
-		);
 	}
 }
 

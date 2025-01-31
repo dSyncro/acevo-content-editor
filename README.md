@@ -2,7 +2,7 @@
 
 # Assetto Corsa Evo Content Editor
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/dSyncro/acevo-content-editor/blob/main/README.md) 
-![Version](https://img.shields.io/badge/version-0.1.5-green) 
+![Version](https://img.shields.io/badge/version-0.1.6-green) 
 [![Build Target](https://img.shields.io/badge/Assetto%20Corsa%20Evo%20Build-0x312E30-red)](https://steamdb.info/depot/3058631/history/?changeid=M:2107359667722066372) [![Steam](https://img.shields.io/badge/steam-%23000000.svg?&logo=steam&logoColor=white)](https://store.steampowered.com/app/3058630)
 
 A utility tool to quickly unpack Assetto Corsa Evo packed content packages (*.kspkg).

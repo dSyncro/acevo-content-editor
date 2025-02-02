@@ -1,11 +1,11 @@
-use std::{path::PathBuf, time::Instant};
+use std::time::Instant;
 
-use glob::Pattern;
-
-use crate::{
-	args::{GlobalOpts, ListArgs},
-	models::{Benchmarked, FileEntry, PackageFileTable},
+use acevo_content_editor::{
+	functions::list_query,
+	models::{Benchmarked, FileEntry},
 };
+
+use crate::args::{GlobalOpts, ListArgs};
 
 #[derive(Debug)]
 pub struct ListCommand {
@@ -28,10 +28,4 @@ impl ListCommand {
 			data: entries,
 		}
 	}
-}
-
-pub fn list_query(path: impl Into<PathBuf>, pattern: &Pattern) -> Vec<FileEntry> {
-	let path = path.into();
-	let file_table = PackageFileTable::read_unpacked_from(path);
-	file_table.query(pattern)
 }

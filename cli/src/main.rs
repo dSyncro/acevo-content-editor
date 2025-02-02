@@ -1,12 +1,13 @@
-use acevo_content_editor::{
-	args::{self},
-	functions::{format_duration_ms, init_logging},
-	models::{Benchmarked, ListCommand, UnpackCommand},
-};
+use acevo_content_editor::models::Benchmarked;
 use clap::Parser;
 use colored::Colorize;
-use humansize::{format_size, DECIMAL};
+use commands::{ListCommand, UnpackCommand};
+use functions::{format_duration_ms, format_size_decimal, init_logging};
 use spdlog::{info, trace};
+
+mod args;
+mod commands;
+mod functions;
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
@@ -37,7 +38,7 @@ async fn main() -> Result<(), ()> {
 					info!(
 						"Unpacked {} with size {}",
 						response.path.magenta(),
-						format_size(response.written_bytes, DECIMAL).cyan()
+						format_size_decimal(response.written_bytes).cyan()
 					);
 					written_bytes += response.written_bytes as usize;
 				}
@@ -46,7 +47,7 @@ async fn main() -> Result<(), ()> {
 			info!(
 				"{}! Written {} of unpacked data using query {}. Skipped {} files out of {} matching query. Took {} to execute.",
 				"Unpack complete".green(),
-				format_size(written_bytes, DECIMAL).cyan(),
+				format_size_decimal(written_bytes).cyan(),
 				glob.as_str().yellow(),
 				skipped_files.to_string().bright_purple(),
 				matching_files.to_string().bright_purple(),
@@ -64,7 +65,7 @@ async fn main() -> Result<(), ()> {
 					"Found file {} at {} with size {}",
 					entry.path.magenta(),
 					format!("0x{:x}", entry.address).cyan(),
-					format_size(entry.size, DECIMAL).cyan()
+					format_size_decimal(entry.size).cyan()
 				)
 			}
 

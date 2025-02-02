@@ -1,7 +1,7 @@
 use std::{sync::Arc, time::Instant};
 
 use acevo_content_editor::{
-	functions::unpack_entry,
+	functions::unpack_entry_async,
 	models::{Benchmarked, PackageFileTable, UnpackTaskData, UnpackTaskResponse},
 };
 use spdlog::error;
@@ -45,7 +45,7 @@ impl UnpackCommand {
 				output_path: output_path.to_owned(),
 			};
 
-			tasks.spawn(unpack_entry(data));
+			tasks.spawn(unpack_entry_async(data));
 		}
 
 		let responses = tasks.join_all().await;

@@ -1,11 +1,73 @@
-use std::path::PathBuf;
+use std::{
+	cell::Cell,
+	fs::File,
+	io::{SeekFrom, Write},
+	ops::Deref,
+	path::PathBuf,
+};
 
-use crate::models::{FileEntry, PackageFileTable};
+use crate::{
+	models::{FileEntry, PackageFileTable, PackedPackageBuffer, UnpackTaskResponse},
+	traits::SeekRead,
+};
 
 pub fn list_query(path: impl Into<PathBuf>, pattern: &glob::Pattern) -> Vec<FileEntry> {
 	let path = path.into();
 	let file_table = PackageFileTable::read_unpacked_from(path);
 	file_table.query(pattern)
+}
+
+pub struct UnpackRequest {
+	pub entry: FileEntry,
+	pub content_package: Cell<File>,
+	pub output_path: PathBuf,
+	pub force: Option<glob::Pattern>,
+	pub key: u64,
+}
+
+pub fn unpack_entry(data: UnpackRequest) -> std::io::Result<UnpackTaskResponse> {
+	let seek_position = SeekFrom::Start(data.entry.address);
+	let mut buffer = vec![0u8; data.entry.size as usize];
+
+	// Read the file
+	data.content_package
+		.into_inner()
+		.seek_read(seek_position, &mut buffer)?;
+
+	// Prepare output
+	let unpacked_buffer = PackedPackageBuffer::new(buffer).unpacked(data.key);
+	let destination = data.output_path.join(&data.entry.path);
+	let output_parent_path = destination.parent();
+	if let Some(parent) = output_parent_path {
+		std::fs::create_dir_all(parent)?;
+	}
+
+	// Skip entry if we can
+	if destination.exists() {
+		match data.force {
+			Some(pattern) if pattern.matches_path(&destination) => {},
+			_ => {
+				let response = UnpackTaskResponse {
+					written_bytes: 0,
+					has_been_skipped: true,
+					path: data.entry.path,
+				};
+				return Ok(response);
+			},
+		}
+	}
+
+	// Write output
+	let mut output_file = File::create(&destination)?;
+	output_file.write_all(unpacked_buffer.deref())?;
+
+	let response = UnpackTaskResponse {
+		written_bytes: data.entry.size,
+		has_been_skipped: false,
+		path: data.entry.path,
+	};
+
+	Ok(response)
 }
 
 #[cfg(feature = "async")]
@@ -22,7 +84,7 @@ mod async_feature {
 		traits::SeekReadAsync,
 	};
 
-	pub async fn unpack_entry(data: UnpackTaskData) -> tokio::io::Result<UnpackTaskResponse> {
+	pub async fn unpack_entry_async(data: UnpackTaskData) -> tokio::io::Result<UnpackTaskResponse> {
 		let seek_position = SeekFrom::Start(data.entry.address);
 		let mut buffer = vec![0u8; data.entry.size as usize];
 

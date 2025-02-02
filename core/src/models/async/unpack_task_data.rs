@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use tokio::{fs::File, sync::Mutex};
 
-use super::FileEntry;
+use crate::models::FileEntry;
 
 pub struct UnpackTaskData {
 	pub entry: FileEntry,

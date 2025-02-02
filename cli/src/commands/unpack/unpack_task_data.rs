@@ -1,8 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
+use acevo_content_editor::models::FileEntry;
 use tokio::{fs::File, sync::Mutex};
-
-use crate::models::FileEntry;
 
 pub struct UnpackTaskData {
 	pub entry: FileEntry,

@@ -1,0 +1,20 @@
+[package]
+name = "acevo_content_editor"
+version = "0.1.7"
+edition = "2021"
+description = "A utility tool to quickly unpack Assetto Corsa Evo packed content packages (*.kspkg)."
+
+[features]
+async = ["dep:tokio"]
+
+[dependencies]
+bytemuck = { version = "1.21.0", features = [
+    "derive",
+    "min_const_generics",
+    "must_cast",
+] }
+glob = "0.3.2"
+tokio = { version = "1.43.0", features = ["full"], optional = true }
+
+[build-dependencies]
+bindgen = "0.71.1"

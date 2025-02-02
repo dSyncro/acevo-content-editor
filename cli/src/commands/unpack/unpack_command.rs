@@ -1,5 +1,9 @@
 use std::{io::SeekFrom, ops::Deref, sync::Arc, time::Instant};
 
+use acevo_content_editor::{
+	models::{Benchmarked, PackageFileTable, PackedPackageBuffer},
+	traits::SeekReadAsync,
+};
 use spdlog::error;
 use tokio::{
 	fs::File,
@@ -8,11 +12,7 @@ use tokio::{
 	task::JoinSet,
 };
 
-use crate::{
-	args::{GlobalOpts, UnpackArgs},
-	models::{Benchmarked, PackageFileTable, PackedPackageBuffer},
-	traits::SeekReadAsync,
-};
+use crate::args::{GlobalOpts, UnpackArgs};
 
 use super::{UnpackTaskData, UnpackTaskResponse};
 

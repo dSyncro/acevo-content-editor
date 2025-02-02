@@ -31,6 +31,7 @@ struct CustomCallbacks {}
 
 impl ParseCallbacks for CustomCallbacks {
 	fn add_derives(&self, _info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
+		// TODO: Add derives only to relevant types
 		vec!["::bytemuck::Pod".into(), "::bytemuck::Zeroable".into()]
 	}
 }

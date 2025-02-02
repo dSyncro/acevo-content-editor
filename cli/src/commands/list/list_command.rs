@@ -1,11 +1,9 @@
 use std::{path::PathBuf, time::Instant};
 
+use acevo_content_editor::models::{Benchmarked, FileEntry, PackageFileTable};
 use glob::Pattern;
 
-use crate::{
-	args::{GlobalOpts, ListArgs},
-	models::{Benchmarked, FileEntry, PackageFileTable},
-};
+use crate::args::{GlobalOpts, ListArgs};
 
 #[derive(Debug)]
 pub struct ListCommand {

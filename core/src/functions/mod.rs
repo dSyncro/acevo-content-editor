@@ -1,5 +1,4 @@
 use std::{
-	cell::Cell,
 	fs::File,
 	io::{SeekFrom, Write},
 	ops::Deref,
@@ -7,7 +6,7 @@ use std::{
 };
 
 use crate::{
-	models::{FileEntry, PackageFileTable, PackedPackageBuffer, UnpackTaskResponse},
+	models::{FileEntry, PackageFileTable, PackedPackageBuffer, UnpackRequest, UnpackTaskResponse},
 	traits::SeekRead,
 };
 
@@ -15,14 +14,6 @@ pub fn list_query(path: impl Into<PathBuf>, pattern: &glob::Pattern) -> Vec<File
 	let path = path.into();
 	let file_table = PackageFileTable::read_unpacked_from(path);
 	file_table.query(pattern)
-}
-
-pub struct UnpackRequest {
-	pub entry: FileEntry,
-	pub content_package: Cell<File>,
-	pub output_path: PathBuf,
-	pub force: Option<glob::Pattern>,
-	pub key: u64,
 }
 
 pub fn unpack_entry(data: UnpackRequest) -> std::io::Result<UnpackTaskResponse> {
@@ -80,11 +71,13 @@ mod async_feature {
 	use tokio::{fs::File, io::AsyncWriteExt};
 
 	use crate::{
-		models::{PackedPackageBuffer, UnpackTaskData, UnpackTaskResponse},
+		models::{PackedPackageBuffer, UnpackTaskRequest, UnpackTaskResponse},
 		traits::SeekReadAsync,
 	};
 
-	pub async fn unpack_entry_async(data: UnpackTaskData) -> tokio::io::Result<UnpackTaskResponse> {
+	pub async fn unpack_entry_async(
+		data: UnpackTaskRequest,
+	) -> tokio::io::Result<UnpackTaskResponse> {
 		let seek_position = SeekFrom::Start(data.entry.address);
 		let mut buffer = vec![0u8; data.entry.size as usize];
 

@@ -2,7 +2,7 @@ use std::{sync::Arc, time::Instant};
 
 use acevo_content_editor::{
 	functions::unpack_entry_async,
-	models::{Benchmarked, PackageFileTable, UnpackTaskData, UnpackTaskResponse},
+	models::{Benchmarked, PackageFileTable, UnpackTaskRequest, UnpackTaskResponse},
 };
 use spdlog::error;
 use tokio::{fs::File, sync::Mutex, task::JoinSet};
@@ -37,7 +37,7 @@ impl UnpackCommand {
 
 		let mut tasks = JoinSet::new();
 		for entry in files {
-			let data = UnpackTaskData {
+			let request = UnpackTaskRequest {
 				content_package: content_package.clone(),
 				entry,
 				force: self.args.force.clone(),
@@ -45,7 +45,7 @@ impl UnpackCommand {
 				output_path: output_path.to_owned(),
 			};
 
-			tasks.spawn(unpack_entry_async(data));
+			tasks.spawn(unpack_entry_async(request));
 		}
 
 		let responses = tasks.join_all().await;
